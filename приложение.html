@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="ru"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Parallel Hub</title>
+<style>
+/* Токены — ДИЗАЙН-СИСТЕМА.md. Контраст замерен по WCAG 24.09.2026: все пары
+   проходят AA, включая вторичный серый (5.9 и 5.4 при пороге 4.5). */
+:root{
+  --фон:#0A0A0F; --карточка:#15151C; --тех:#00D4FF; --выгода:#00FF88;
+  --текст:#FFFFFF; --второй:#8B8B9E; --стоп:#FF3B5C;
+  --радиус:12px; --радиус-кнопки:8px; --переход:300ms ease;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:var(--фон);color:var(--текст);max-width:430px;margin:0 auto;overflow-x:hidden;
+  font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  padding-bottom:70px}
+button,input,select{font:inherit;color:inherit}
+.шапка{display:flex;align-items:center;gap:10px;padding:12px 16px;max-width:430px;margin:0 auto;
+  border-bottom:1px solid #ffffff14;position:sticky;top:0;background:#0a0a0fef;
+  backdrop-filter:blur(12px);z-index:5}
+.знак{flex:0 0 34px;border-radius:8px}
+.лого{font-weight:800;letter-spacing:.12em;font-size:14px}
+.лого b{color:var(--тех)}
+.слоган{color:var(--второй);font-size:11px}
+.экран{display:none;padding:12px 16px}
+.экран.вкл{display:block}
+
+/* ── Главная ── */
+/* Акция: единственный блок с зелёным акцентом — им помечается выгода
+   (ДИЗАЙН-СИСТЕМА.md), и второго такого на экране быть не должно. */
+.акция{border-radius:var(--радиус);padding:16px;margin-bottom:12px;
+  background:linear-gradient(135deg,#00ff8814,#00d4ff10),var(--карточка);
+  border:1px solid #00ff8840}
+.акция-шапка{font-weight:800;font-size:13px;letter-spacing:.06em;color:var(--выгода)}
+.акция-текст{color:var(--второй);font-size:12px;margin:6px 0 10px}
+.акция-строки{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.акция-строка{display:flex;justify-content:space-between;gap:10px;font-size:12px;
+  align-items:baseline}
+.акция-строка b{font-family:ui-monospace,Menlo,monospace;font-size:14px;white-space:nowrap}
+.акция-кнопка{display:block;text-align:center;background:var(--выгода);color:#00140a;
+  text-decoration:none;border-radius:var(--радиус-кнопки);padding:11px;
+  font-weight:800;font-size:13px;transition:var(--переход)}
+.манифест{border-radius:var(--радиус);padding:22px 18px;margin-bottom:14px;
+  background:linear-gradient(135deg,#00d4ff1f,#00ff881a 60%,transparent),var(--карточка);
+  border:1px solid #ffffff12}
+.манифест h1{font-size:23px;line-height:1.15;font-weight:800;letter-spacing:-.01em}
+.манифест p{color:var(--второй);font-size:12px;margin-top:8px}
+.манифест button{margin-top:14px;background:var(--тех);color:#00131a;border:0;
+  border-radius:var(--радиус-кнопки);padding:11px 16px;font-weight:700;
+  transition:var(--переход)}
+.разделы{display:flex;flex-direction:column;gap:8px}
+.разделы.малые{margin-bottom:12px}
+.разделы.малые .раздел{padding:11px 14px}
+.крошки a{color:var(--второй);cursor:pointer}
+.заголовок-свойств{font-size:14px;font-weight:700;margin-top:18px}
+.раздел{display:flex;align-items:center;gap:12px;background:var(--карточка);
+  border:1px solid #ffffff0f;border-radius:var(--радиус);padding:14px;
+  transition:var(--переход);cursor:pointer;text-align:left;width:100%}
+.раздел:active{border-color:var(--тех)}
+.значок{flex:0 0 38px;height:38px;border-radius:10px;background:#ffffff0a;
+  display:grid;place-items:center}
+.значок svg{width:20px;height:20px;stroke:var(--тех);fill:none;stroke-width:1.6}
+.раздел .имя{flex:1;font-weight:600;font-size:14px}
+.раздел .сколько{color:var(--второй);font-size:12px;flex:0 0 auto}
+.шеврон{color:var(--второй)}
+
+/* ── Каталог ── */
+.поиск{width:100%;background:var(--карточка);border:1px solid #ffffff14;
+  border-radius:var(--радиус-кнопки);padding:10px 12px;margin-bottom:10px}
+.крошки{color:var(--второй);font-size:12px;margin-bottom:10px}
+.крошки b{color:var(--текст)}
+.фильтры{display:flex;gap:8px;overflow-x:auto;padding-bottom:10px;
+  scrollbar-width:none}
+.фильтры::-webkit-scrollbar{display:none}
+.чип{white-space:nowrap;background:#ffffff0d;border:1px solid #ffffff14;
+  color:var(--второй);border-radius:20px;padding:7px 13px;font-size:13px;
+  transition:var(--переход);cursor:pointer}
+.чип.вкл{background:var(--тех);color:#00131a;border-color:transparent;font-weight:700}
+.список{display:flex;flex-direction:column;gap:10px}
+.товар{display:flex;gap:12px;background:var(--карточка);border:1px solid #ffffff0f;
+  border-radius:var(--радиус);padding:12px;cursor:pointer;transition:var(--переход)}
+.товар:active{border-color:var(--тех)}
+.фото{flex:0 0 78px;height:78px;border-radius:10px;background:#ffffff08;
+  object-fit:contain;padding:4px}
+.нетфото{flex:0 0 78px;height:78px;border-radius:10px;background:#ffffff06;
+  border:1px dashed #ffffff22;display:grid;place-items:center;color:var(--второй);
+  font-size:9px;text-align:center;line-height:1.3}
+.тело{flex:1;min-width:0}
+.тело h3{font-size:13px;font-weight:600;line-height:1.3;margin-bottom:6px;overflow-wrap:anywhere}
+.цена{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:17px;
+  font-weight:700}
+.наличие{color:var(--выгода);font-size:11px;margin-top:5px}
+.мало{color:var(--стоп)}
+.артикул{color:var(--второй);font-size:10px;font-family:ui-monospace,Menlo,monospace}
+.ещё{width:100%;margin-top:12px;background:#ffffff0d;border:1px solid #ffffff14;
+  border-radius:var(--радиус-кнопки);padding:12px;color:var(--второй)}
+.пусто{color:var(--второй);text-align:center;padding:40px 0;font-size:13px}
+
+/* ── Карточка ── */
+.галерея{display:flex;gap:8px;overflow-x:auto;margin-bottom:14px;scrollbar-width:none}
+.галерея::-webkit-scrollbar{display:none}
+.галерея img{height:210px;border-radius:var(--радиус);background:#ffffff08;
+  object-fit:contain;padding:8px;flex:0 0 auto}
+.карт h2{font-size:18px;font-weight:700;line-height:1.25;overflow-wrap:anywhere}
+.карт .цена{font-size:27px;display:block;margin:12px 0 4px}
+.свойства{margin-top:16px;border-top:1px solid #ffffff14}
+.свойства div{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;
+  padding:9px 0;border-bottom:1px solid #ffffff0d;font-size:13px}
+.свойства span{min-width:0;overflow-wrap:anywhere}
+.свойства span:first-child{color:var(--второй);flex:0 0 45%}
+.свойства span:last-child{text-align:right}
+.бронь{position:sticky;bottom:78px;width:100%;margin-top:18px;background:var(--тех);
+  color:#00131a;border:0;border-radius:var(--радиус-кнопки);padding:14px;
+  font-weight:800;font-size:15px;transition:var(--переход)}
+.назад{background:none;border:0;color:var(--второй);font-size:13px;margin-bottom:10px}
+.сноска{color:var(--второй);font-size:11px;line-height:1.5;margin-top:14px}
+
+/* ── Нижнее меню ── */
+.меню{position:fixed;bottom:0;left:0;right:0;max-width:430px;margin:0 auto;
+  display:flex;background:#0e0e14f5;border-top:1px solid #ffffff14;
+  backdrop-filter:blur(14px);padding-bottom:env(safe-area-inset-bottom)}
+.меню button{flex:1;background:none;border:0;padding:9px 0 11px;color:var(--второй);
+  font-size:10px;transition:var(--переход)}
+.меню button.вкл{color:var(--тех)}
+.меню svg{width:21px;height:21px;display:block;margin:0 auto 3px;fill:none;
+  stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style></head>
+<body>
+
+<div class="шапка">
+  <img class="знак" src="знак-96.png" width="34" height="34"
+       srcset="знак-96.png 1x, знак-192.png 2x" alt="">
+  <div>
+    <div class="лого">PARALLEL<b>HUB</b></div>
+    <div class="слоган">Техника, которую не нужно ждать</div>
+  </div>
+</div>
+
+<section id="э-главная" class="экран вкл"></section>
+<section id="э-каталог" class="экран"></section>
+<section id="э-товар" class="экран"></section>
+
+<nav class="меню">
+  <button data-э="главная" class="вкл">
+    <svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V21H3z"/></svg>Главная</button>
+  <button data-э="каталог">
+    <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>Каталог</button>
+  <button data-э="поиск">
+    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>Поиск</button>
+  <button data-э="профиль">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/></svg>Профиль</button>
+</nav>
+
+<script>
+const $ = s => document.querySelector(s);
+const деньги = n => n.toLocaleString("ru-RU") + " ₽";
+let Д = null, ДЕТИ = {}, УЗЛЫ = {};
+let состояние = {узел:null, поиск:"", сорт:"дорогие", показано:0};
+const НА_СТРАНИЦЕ = 24;
+
+fetch("данные.json").then(r => r.json()).then(д => {
+  Д = д;
+  д.дерево.forEach(у => { УЗЛЫ[у.id] = у; (ДЕТИ[у.род || "*"] ||= []).push(у); });
+  Object.values(ДЕТИ).forEach(сп => сп.sort((a,b) => b.n - a.n));
+  поАдресу();
+});
+
+/* Навигация по адресу: без неё нельзя ни сослаться на товар, ни вернуться
+   кнопкой «назад» телефона. У поставщика ровно так же — ссылка на карточку
+   открывает конкретный товар. */
+function поАдресу(){
+  const h = decodeURIComponent(location.hash.slice(1));
+  if (h.startsWith("товар=")) { const x = +h.split("=")[1];
+    if (Д.товары.some(t => t.id === x)) return товар(x); }
+  if (h.startsWith("узел=")) { состояние.узел = h.split("=")[1]; return раздел(); }
+  if (h === "каталог") { состояние.узел = null; return раздел(); }
+  главная();
+}
+window.addEventListener("hashchange", поАдресу);
+
+function экран(имя){
+  document.querySelectorAll(".экран").forEach(э => э.classList.remove("вкл"));
+  $("#э-" + имя).classList.add("вкл");
+  window.scrollTo(0, 0);
+}
+document.querySelectorAll(".меню button").forEach(b => b.onclick = () => {
+  document.querySelectorAll(".меню button").forEach(x => x.classList.remove("вкл"));
+  b.classList.add("вкл");
+  const э = b.dataset.э;
+  if (э === "главная") location.hash = "";
+  else if (э === "каталог") location.hash = "каталог";
+  else if (э === "поиск") { location.hash = "каталог"; setTimeout(() => $(".поиск")?.focus(), 60); }
+  else профиль();
+  if (location.hash === "" ) поАдресу();
+});
+
+/* Значки рисуем сами: у поставщика тут эмодзи, а они рисуются шрифтом
+   устройства — на разных телефонах разный вид. */
+const ЗНАЧКИ = {
+  "Мобильные телефоны": '<rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/>',
+  "Ноутбуки и планшеты": '<rect x="3" y="5" width="18" height="12" rx="1.5"/><path d="M2 20h20"/>',
+  "Игровые приставки": '<path d="M7 12h4M9 10v4"/><circle cx="16" cy="12" r="1"/><rect x="2" y="7" width="20" height="10" rx="4"/>',
+  "Компьютерное оборудование": '<rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/>',
+  "Аксессуары": '<path d="M4 8h16v10H4z"/><path d="M8 8V6h8v2"/>',
+  "Умные Часы": '<rect x="7" y="6" width="10" height="12" rx="2"/><path d="M9 6V3h6v3M9 18v3h6v-3"/>',
+  "Наушники и Колонки": '<path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="2" y="13" width="4" height="7" rx="2"/><rect x="18" y="13" width="4" height="7" rx="2"/>',
+  "Техника для Дома": '<path d="M3 10.5 12 3l9 7.5V21H3z"/>',
+  "Готовые Компьютеры": '<rect x="6" y="3" width="12" height="18" rx="2"/><path d="M10 7h4"/>',
+};
+const значок = имя => `<svg viewBox="0 0 24 24">${ЗНАЧКИ[имя] || '<circle cx="12" cy="12" r="8"/>'}</svg>`;
+
+function путь(ид){
+  const цепь = [];
+  let у = УЗЛЫ[ид];
+  while (у) { цепь.unshift(у); у = УЗЛЫ[у.род]; }
+  return цепь;
+}
+
+function главная(){
+  экран("главная");
+  const корни = ДЕТИ["*"] || [];
+  const а = Д.акция || [];
+  /* Акция стоит ВЫШЕ манифеста: окно хайпа закрывается само, когда партии
+     дойдут до всех, и прятать её под слоган значит потерять неделю. */
+  const блокАкции = а.length ? `
+    <div class="акция">
+      <div class="акция-шапка">🔥 ПРЕДЗАКАЗ · iPhone 18 Pro</div>
+      <div class="акция-текст">Первые партии уже в пути. Цены ниже рынка,
+        предоплаты нет.</div>
+      <div class="акция-строки">${а.slice(0, 4).map(к => `
+        <div class="акция-строка">
+          <span>${к.модель.replace("iPhone ", "")} ${к.память} · ${к.регион}</span>
+          <b>${к.цена.toLocaleString("ru-RU")} ₽</b>
+        </div>`).join("")}</div>
+      <a class="акция-кнопка" href="https://t.me/parallelhub_bot?start=предзаказ18"
+         target="_blank" rel="noopener">Записаться на предзаказ</a>
+    </div>` : "";
+  $("#э-главная").innerHTML = блокАкции + `
+    <div class="манифест">
+      <h1>ТЕХНИКА,<br>КОТОРУЮ<br>НЕ НУЖНО ЖДАТЬ.</h1>
+      <p>${Д.всего.toLocaleString("ru-RU")} позиций в наличии в Москве · наличие проверено сегодня</p>
+      <button onclick="location.hash='каталог'">Смотреть наличие</button>
+    </div>
+    <div class="разделы">${корни.map(к => `
+      <button class="раздел" onclick="location.hash='узел=${к.id}'">
+        <span class="значок">${значок(к.имя)}</span>
+        <span class="имя">${к.имя}</span>
+        <span class="сколько">${к.n}</span>
+        <span class="шеврон">›</span>
+      </button>`).join("")}</div>`;
+}
+
+function отбор(){
+  let т = Д.товары;
+  if (состояние.узел){
+    const ветка = new Set([состояние.узел]);
+    let росло = true;
+    while (росло){ росло = false;
+      Д.дерево.forEach(у => { if (у.род && ветка.has(у.род) && !ветка.has(у.id)) { ветка.add(у.id); росло = true; } }); }
+    т = т.filter(x => ветка.has(x.кат));
+  }
+  if (состояние.поиск){
+    const п = состояние.поиск.toLowerCase();
+    т = т.filter(x => x.n.toLowerCase().includes(п));
+  }
+  return состояние.сорт === "дешёвые"
+    ? [...т].sort((a,b) => a.c - b.c) : [...т].sort((a,b) => b.c - a.c);
+}
+
+function раздел(){
+  экран("каталог");
+  состояние.показано = НА_СТРАНИЦЕ;
+  const цепь = состояние.узел ? путь(состояние.узел) : [];
+  const дети = ДЕТИ[состояние.узел || "*"] || [];
+  const крошки = ['<a onclick="location.hash=\'\'">Главная</a>']
+    .concat(цепь.map((у,i) => i === цепь.length-1
+      ? `<b>${у.имя}</b>` : `<a onclick="location.hash='узел=${у.id}'">${у.имя}</a>`))
+    .join(" › ");
+  $("#э-каталог").innerHTML = `
+    <div class="крошки">${крошки}</div>
+    ${дети.length ? `<div class="разделы малые">${дети.map(д => `
+        <button class="раздел" onclick="location.hash='узел=${д.id}'">
+          <span class="имя">${д.имя}</span>
+          <span class="сколько">${д.n}</span><span class="шеврон">›</span>
+        </button>`).join("")}</div>` : ""}
+    <input class="поиск" placeholder="Поиск по названию" value="${состояние.поиск}"
+           oninput="состояние.поиск=this.value;рисоватьСписок()">
+    <div class="фильтры">
+      <button class="чип ${состояние.сорт==="дорогие"?"вкл":""}" onclick="состояние.сорт='дорогие';рисоватьСписок()">↓ Дороже</button>
+      <button class="чип ${состояние.сорт==="дешёвые"?"вкл":""}" onclick="состояние.сорт='дешёвые';рисоватьСписок()">↑ Дешевле</button>
+    </div>
+    <div class="список" id="список"></div><div id="подвал"></div>`;
+  рисоватьСписок();
+}
+
+function рисоватьСписок(){
+  const все = отбор();
+  const т = все.slice(0, состояние.показано);
+  $("#список").innerHTML = т.length ? т.map(x => `
+    <div class="товар" onclick="location.hash='товар=${x.id}'">
+      ${x.ф.length ? `<img class="фото" loading="lazy" src="${x.ф[0]}" alt="">`
+                   : `<div class="нетфото">фото<br>нет</div>`}
+      <div class="тело">
+        <h3>${x.n}</h3>
+        <span class="цена">${деньги(x.c)}</span>
+        <div class="наличие ${x.ост <= 1 ? "мало" : ""}">● ${x.ост <= 1 ? "последний, проверено сегодня" : "в наличии, проверено сегодня"}</div>
+        <div class="артикул">${x.sku}</div>
+      </div>
+    </div>`).join("") : `<div class="пусто">Здесь пока пусто.<br>Загляните в соседний раздел.</div>`;
+  $("#подвал").innerHTML = все.length > т.length
+    ? `<button class="ещё" onclick="состояние.показано+=${НА_СТРАНИЦЕ};рисоватьСписок()">Показать ещё · осталось ${все.length - т.length}</button>` : "";
+}
+
+function товар(id){
+  const x = Д.товары.find(t => t.id === id);
+  экран("товар");
+  const цепь = путь(x.кат);
+  const свойства = Object.entries(x.св);
+  $("#э-товар").innerHTML = `
+    <button class="назад" onclick="history.back()">‹ Назад</button>
+    <div class="крошки">${цепь.map(у => `<a onclick="location.hash='узел=${у.id}'">${у.имя}</a>`).join(" › ")}</div>
+    <div class="карт">
+      ${x.ф.length ? `<div class="галерея">${x.ф.map(u => `<img src="${u}" alt="" loading="lazy">`).join("")}</div>` : ""}
+      <h2>${x.n}</h2>
+      <span class="цена">${деньги(x.c)}</span>
+      <div class="наличие ${x.ост <= 1 ? "мало" : ""}">● ${x.ост <= 1 ? "последний экземпляр" : x.ост + " шт. в наличии"}, проверено сегодня</div>
+      ${свойства.length ? `<h4 class="заголовок-свойств">Характеристики</h4>
+        <div class="свойства">${свойства.map(([к,з]) => `<div><span>${к}</span><span>${з}</span></div>`).join("")}</div>` : ""}
+      <button class="бронь" onclick="alert('Бронь появится, когда бот научится её принимать.')">Забронировать на 24 часа</button>
+      <p class="сноска">Артикул ${x.sku}. Цена конечная, наценка в образце условная.
+      Фотографии принадлежат поставщику и показаны ссылкой — до договорённости об их использовании.</p>
+    </div>`;
+}
+
+function профиль(){
+  экран("товар");
+  $("#э-товар").innerHTML = `
+    <h2 style="font-size:17px">Профиль</h2>
+    <p class="сноска">Здесь будут ваши брони и история заказов. Пока бот не
+    принимает брони, показывать нечего — и мы не рисуем пустой экран ради галочки.</p>`;
+}
+</script>
+</body></html>
